@@ -1,0 +1,8 @@
+stages:
+  - validate
+
+validate-knowledge:
+  stage: validate
+  image: node:22-alpine
+  script:
+    - node scripts/knowledge-tool.mjs validate --check-index

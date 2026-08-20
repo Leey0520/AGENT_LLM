@@ -1,0 +1,13 @@
+.ae-cli/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
+credentials.json
+secure-tokens/
+node_modules/
+.DS_Store
+Thumbs.db

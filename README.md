@@ -1,93 +1,83 @@
-# LLM_WIKI
+# 游戏数据分析知识库
 
+这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的唯一正式知识仓库。`main` 保存已进入版本管理的知识；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
 
+## 工作链路
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.chilly.room/liyanzhun/llm_wiki.git
-git branch -M main
-git push -uf origin main
+```text
+GitLab main
+    ↓ SessionStart 安全同步
+本地 Git 工作区
+    ↓ AGENTS.md + .agents/skills
+Codex 分析流程
+    ↓ ae-analysis Skill + 已授权 ae-cli
+数数平台
+    ↓ 分析结果
+inbox/generated 候选知识
+    ↓ 人工复核 + Merge Request
+knowledge 正式知识 + index.md
 ```
 
-## Integrate with your tools
+各层职责：
 
-- [ ] [Set up project integrations](https://gitlab.chilly.room/liyanzhun/llm_wiki/-/settings/integrations)
+- `knowledge/`：可被分析引用的知识正文。
+- `knowledge/platform/`：数数、飞书、Git 等系统级操作边界。
+- `knowledge/methods/`：跨项目通用的分析方法和检查清单，不保存某个游戏的最终口径。
+- `knowledge/projects/<project>/`：该游戏独有的业务、埋点、属性、指标和已知问题。
+- `AGENTS.md`：Codex 每次进入仓库都会读取的总规则。
+- `.agents/skills/`：可复用的分析和知识维护工作流。
+- `.codex/`：项目级 Codex 配置及安全 Hook。
+- `inbox/`：AI 或人工尚未复核的候选知识。
 
-## Collaborate with your team
+## 首次使用
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+只需克隆一次：
 
-## Test and Deploy
+```powershell
+git clone https://gitlab.chilly.room/liyanzhun/llm_wiki.git
+Set-Location .\llm_wiki
+```
 
-Use the built-in continuous integration in GitLab.
+首次打开或 Hook 修改后，在 Codex 中执行 `/hooks`，审查并信任本仓库的项目 Hook。项目未被信任时，Codex 会忽略 `.codex/config.toml` 和项目 Hook，但仍会读取仓库中的普通文件。
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+## 日常同步
 
-***
+不需要反复 `clone`。Codex 会在会话启动时执行安全同步：先 `fetch`，仅当处于 `main`、工作区干净、本地没有领先或分叉时才 `merge --ff-only`。
 
-# Editing this README
+也可手工执行：
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+```powershell
+node scripts/sync-knowledge.mjs
+```
 
-## Suggestions for a good README
+如果存在本地修改、领先提交或分叉，脚本只提示并停止，不覆盖文件。正式知识建议通过分支和 Merge Request 进入 `main`。
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 新建游戏项目
 
-## Name
-Choose a self-explaining name for your project.
+1. 复制 `knowledge/projects/_template/` 为稳定英文或拼音项目标识，例如 `soul-knight/`。
+2. 完成 `project.yaml` 中的 APPID、时区、用户主体和数据范围。
+3. 分别补充 `business/`、`data-contract/`、`metrics/`、`decisions/` 和 `playbooks/`。
+4. 运行索引和校验，再提交 Merge Request。
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```powershell
+node scripts/knowledge-tool.mjs build-index
+node scripts/knowledge-tool.mjs validate --check-index
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+不同游戏的事件名、属性、用户识别和指标口径不得共享。`knowledge/methods/` 只提供方法；当项目最终口径缺失时，Codex 必须停止并向用户确认。
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 数数与飞书
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- 数数数据操作使用已经安装并授权的 `ae-cli`，由 `ae-analysis` 等对应 Skill 约束发现、查询和资产操作。
+- 仓库 Skill 负责先读取项目知识、形成 SQL、展示完整 SQL并等待批准，再调用数数能力。
+- 飞书 CLI 用于交付报告和看板，不作为埋点或指标口径的唯一事实源。
+- GitLab MCP 可用于 Issue、Merge Request、Pipeline 等协作，但本仓库 Markdown 的主读取方式始终是本地 Git 工作区。
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## 安全边界
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- 禁止提交 `.ae-cli/`、访问令牌、Cookie、私钥、`.env` 或任何授权缓存。
+- 项目知识不得包含个人明细数据，只记录表、字段、口径、约束和经过脱敏的示例。
+- AI 自动提炼的知识只能先写入 `inbox/generated/`，不能直接标为正式批准知识。
+- 禁止 `git reset --hard` 和强制推送。
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Codex 约定参考：[AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)、[Skills](https://learn.chatgpt.com/docs/build-skills)、[Hooks](https://learn.chatgpt.com/docs/hooks)。
