@@ -1,0 +1,17 @@
+project: zhansoul-mingren
+display_name: 战魂铭人
+aliases: [战魂铭人, Soul Knight Action]
+owners: [data-analytics]
+thinkingdata:
+  app_id: null
+  project_id: null
+  query_cluster: null
+timezone:
+  name: Asia/Shanghai
+  day_start: '00:00'
+identity:
+  primary_subject: '#device_id for non-payment analysis on migrated packages; payment uses the service-side user subject'
+  merge_rule: 'Use #device_id for non-payment dashboards; do not deduplicate new analysis by account_id or user_id. Payment uses #user_id or the service-side visitor identity because service events do not carry #device_id.'
+data_scope:
+  available_from: 'Migration-package payment records begin 2024-07-19; TapTap identity is not affected by the migration.'
+  observation_cutoff_rule: 'Confirm the release version, channel, and dashboard maturity before interpreting a metric.'
