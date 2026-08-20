@@ -1,78 +1,35 @@
 ---
 id: project.dajianghu.tracking-plan-current
-title: 大江湖当前埋点方案索引（2026-08-20）
+title: 大江湖埋点方案使用基线
 scope: project
 project: dajianghu
 status: draft
-owner: unassigned
+owner: data-analytics
 reviewed_at: 2026-08-20
-tags: [dajianghu, tracking, thinkingdata, source-workbook]
+tags: [dajianghu, tracking, baseline, thinkingdata]
 ---
 
-# 大江湖当前埋点方案索引
+# 大江湖埋点方案使用基线
 
-## 来源与状态
+本页把本地方案表里已经能确认的业务结构提炼成查询入口，不把模板假设升级成正式口径。APPID、数数项目 ID、时区、主体和线上生效版本仍需从项目交接和数数后台确认后才能执行查询。
 
-- 来源文件：`大江湖_埋点方案_20260820.xlsx`。
-- SHA-256：`DC973A3838C279D085AE6D3B4D7615237866113B79CDBCE4EA1941451299B17B`。
-- 读取范围：9 个工作表；`#事件数据` 19 个事件、94 条事件属性行、56 个去重属性名；`#公共事件属性` 7 条；`#用户数据` 7 条。
-- 当前只作为项目方案索引，APPID、数数项目 ID、时区、用户主体和线上生效范围均未从数数或飞书交接文档确认。
+## 事件族
 
-## 用户 ID 草案
+- 基础与生命周期：`app_on_active`、`ta_app_start`、`ta_app_end`、`create_role`、`player_account_login`、`next_day_login`。
+- 教程与养成：`guide`、`tutorial_select_class`、`attribute_upgrade`、`class_change`、`skill_slot_upgrade`、`create_star_vein`。
+- 战斗：`battle_enter`、`battle_end`。战斗对象组使用角色/装备/掉落等明细时，按 `character_id` 等稳定实体关联，不把对象组拍平成一个字符串。
+- 商业化：`create_order`、`claim_order`、`refund_order`、`buy_fullgame_call`、`buy_fullgame_success`。订单 ID、商品、金额和支付状态必须按实际服务端链路确认。
 
-工作簿同时列出单账号单角色和单账号多角色两种场景：`#account_id` 是账户或角色业务 ID，`#distinct_id` 是设备相关或访客 ID。实际项目采用哪一种必须以项目交接文档和线上数数配置为准，不能从模板直接推断。
+## 公共与用户字段
 
-## 事件目录
+方案中可见的公共上下文包括渠道、版本、存档、UTC 事件时间以及资源库存；用户表包括存档、唯一 ID、最高剧情进度和活跃集合等长期状态。字段能否用于去重、连接或指标计算，必须等项目确认主体和字段类型后再决定。
 
-| 事件名 | 属性行数 |
-| --- | ---: |
-| `app_on_active` | 1 |
-| `attribute_upgrade` | 2 |
-| `battle_end` | 18 |
-| `battle_enter` | 10 |
-| `buy_fullgame_call` | 1 |
-| `buy_fullgame_success` | 1 |
-| `claim_order` | 15 |
-| `class_change` | 5 |
-| `create_order` | 15 |
-| `create_role` | 5 |
-| `create_star_vein` | 2 |
-| `guide` | 1 |
-| `next_day_login` | 2 |
-| `player_account_login` | 1 |
-| `refund_order` | 11 |
-| `skill_slot_upgrade` | 1 |
-| `ta_app_end` | 1 |
-| `ta_app_start` | 1 |
-| `tutorial_select_class` | 1 |
+## 对象组验收
 
-## 公共事件属性
+`battle_enter`/`battle_end` 的战斗角色信息、掉落物等对象组需要验收父属性、子属性、行粒度和空列表/空对象组约定；不能只看事件有无触发。
 
-| 属性名 | 类型 | 显示名 |
-| --- | --- | --- |
-| `channel_name` | 文本 | 渠道名 |
-| `hero_token_count` | 数值 | 当前拥有的江湖英雄贴 |
-| `martial_fragment_count` | 数值 | 当前拥有的江湖武学残章 |
-| `meat_bun_count` | 数值 | 当前拥有的大肉包 |
-| `save_id` | 文本 | 存档 ID |
-| `utc_time` | 时间 | 事件触发时 UTC 时间戳 |
-| `version_name` | 文本 | 客户端版本号 |
+## 使用限制
 
-## 用户属性
-
-| 属性名 | 类型 | 更新方式 |
-| --- | --- | --- |
-| `active_set_info` | 列表 | 待确认 |
-| `channel_name` | 文本 | `user_set` |
-| `max_level_id` | 文本 | 待确认 |
-| `save_id_list` | 列表 | 待确认 |
-| `unique_id` | 文本 | `user_set` |
-| `user_max_story_mode_level` | 数值 | `user_set` |
-| `version_name` | 文本 | `user_set` |
-
-## 结构性注意点
-
-- `battle_end`、`battle_enter` 使用 `battle_character_info` 对象组；`battle_end` 还使用 `drop_item_info` 对象组。子属性必须按对象组的实际结构验收。
-- 订单链路同时存在 `create_order`、`claim_order`、`refund_order` 和买断相关事件；订单 ID、商品字段、金额和支付状态的最终含义需要结合项目业务和线上字段绑定确认。
-- 表格中的事件说明、属性说明存在空值或 `161`/`163` 等值；本页没有把这些值解释为业务语义。
-- 这份索引不是完整方案替代品；需要逐行方案时以用户提供的工作簿和数数当前方案导出为准。
+- 本地文件 `C:\Users\Administrator\Downloads\大江湖_埋点方案_20260820.xlsx` 是设计输入，不代表已上线数据。
+- 方案中的空说明、历史标记和未确认值不做语义猜测；发现冲突时保留“待确认”，不复制战魂铭人的字段或主体规则。
+- 设计或验收前仍需补充大江湖版本需求文档、数数线上方案和已有看板。

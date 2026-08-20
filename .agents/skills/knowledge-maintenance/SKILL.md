@@ -17,4 +17,11 @@ Read [references/document-contract.md](references/document-contract.md) before c
 6. Inspect `git diff --check`, `git status --short`, and the complete diff. Never stage `.ae-cli/`, credentials, personal data, or generated exports.
 7. Use a branch and Merge Request for formal changes unless the user explicitly authorizes another Git workflow. Never push, merge, or alter remote state without task-specific authorization.
 
+## Source extraction rules
+
+- For Feishu sources, read the document body, embedded Sheets/Base fields and records that affect the requested workflow. Screenshots, rendered tables and image alt text are UI evidence only; never copy them into formal knowledge.
+- Extract decisions as “when to do what”, field semantics, exceptions, owners and verification steps. Do not create pages whose main content is a source filename, row count, attribute count or ingestion log.
+- When a source table contains historical versions, preserve the version boundary and label the table as a baseline or index unless the online platform confirms it is current.
+- For a project-specific page, link the source and record unresolved fields instead of guessing. Do not promote generic Skills or industry conventions over company documents.
+
 When onboarding a game, copy `knowledge/projects/_template/` to a stable lowercase project slug and complete `project.yaml` before adding metrics or running analysis.

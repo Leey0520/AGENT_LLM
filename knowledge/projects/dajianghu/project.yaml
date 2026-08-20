@@ -1,7 +1,7 @@
 project: dajianghu
 display_name: 大江湖
 aliases: [大江湖]
-owners: []
+owners: [data-analytics]
 thinkingdata:
   app_id: null
   project_id: null

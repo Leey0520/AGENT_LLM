@@ -1,95 +1,60 @@
 ---
 id: project.zhansoul-mingren.tracking-plan-current
-title: 战魂铭人当前埋点方案索引（2026-08-20）
+title: 战魂铭人埋点方案使用基线
 scope: project
 project: zhansoul-mingren
 status: draft
-owner: unassigned
+owner: data-analytics
 reviewed_at: 2026-08-20
-tags: [zhansoul-mingren, tracking, thinkingdata, source-workbook]
+tags: [zhansoul-mingren, tracking, baseline, thinkingdata]
 ---
 
-# 战魂铭人当前埋点方案索引
+# 战魂铭人埋点方案使用基线
 
-## 来源与状态
+## 这张表能做什么
 
-- 来源文件：`战魂铭人_埋点方案_20260820.xlsx`。
-- SHA-256：`F1C9FEA4BBD6E3166088931F95850CE3FB38356E2DC8CC9A72291E2CAE1B6DB3`。
-- 读取范围：9 个工作表；`#事件数据` 194 个事件、3811 条事件属性行、487 个去重属性名；`#公共事件属性` 23 条；`#用户数据` 69 条。
-- 当前只作为项目方案索引，APPID、数数项目 ID、时区、用户主体和线上生效范围均未从数数或飞书交接文档确认。
+在线文档 [战魂铭人埋点数据设计方案](https://chillyroom.feishu.cn/wiki/VQPKwciGWiuK2EkFPsAcYjqJnTd) 是查历史事件、属性、显示名、类型、对象结构和变更记录的入口。它同时保留历史版本内容，表头存在旧版本标注，不能直接当作“当前线上全量方案”。做版本验收前，必须再用数数后台的方案状态、版本范围和线上事件确认。
 
-## 用户 ID 草案
+## 读取顺序
 
-工作簿列出 `#account_id` 与 `#distinct_id` 的通用设计说明，但没有替代项目交接文档。战魂铭人的账号、角色、设备、平台和访客 ID 关系必须以项目交接资料和线上配置为准。
+1. 看当前可见的客户端事件表、用户表、服务端埋点和玩法实验室页签。
+2. 用 `TA埋点ID名词映射表` 核对事件/属性英文名与中文显示名。
+3. 用更新日志和埋点表更新日志确认哪个版本新增、修改、停用或只在某渠道生效。
+4. 对对象和对象组打开子属性结构，不只看父属性行。
+5. 发现方案与代码不一致时，先记录“方案状态”和“实际是否上报”，不要在知识库里静默改写方案。
 
-## 事件目录（按属性行数降序）
+## 已确认的设计基线
 
-| 事件名 | 属性行数 |
-| --- | ---: |
-| `game_over` | 122 |
-| `enter_level` | 101 |
-| `game_over_network` | 86 |
-| `dailyActivity_progress` | 47 |
-| `enter_level_network` | 41 |
-| `shop_jew_buy` | 39 |
-| `mel_trail_end` | 38 |
-| `skill_buy` | 38 |
-| `style_buy` | 38 |
-| `hero_buy` | 38 |
-| `tap_start` | 38 |
-| `browse_hero` | 37 |
-| `drinks_buy` | 37 |
-| `UnityException` | 37 |
-| `completeTravel` | 37 |
-| `ta_app_start` | 37 |
-| `unlock_hero_skin` | 36 |
-| `fightClub_fightOver` | 36 |
-| `purchases_fail` | 36 |
-| `order_finish` | 36 |
-| `browse_heroPortrait` | 36 |
-| `enter_shop` | 35 |
-| `decomposition_machine_use` | 35 |
-| `heroPiece_heroMerge` | 35 |
-| `purchases_success` | 35 |
-| `purchases_trigger` | 35 |
-| `ta_app_end` | 35 |
-| `useSoulStone` | 34 |
-| `useRedStone` | 34 |
-| `dailyActivity_rewardCollect` | 34 |
-| `app_on_active` | 34 |
-| `browse_heroSkin` | 34 |
-| `choose_character` | 34 |
-| `completeStory` | 34 |
-| `start_host` | 32 |
-| `talk_asura` | 32 |
-| `talk_builderCat` | 32 |
-| `talk_crystallBall` | 32 |
-| `talk_mailbox` | 32 |
-| `talk_phonograph` | 32 |
-| `talk_zhao` | 32 |
-| `disconnect` | 32 |
-| `refresh_host` | 32 |
-| `join_network` | 34 |
-| `exit_network` | 34 |
-| `UnityException` | 37 |
+### 基础与引导
 
-完整 194 个事件名及逐行属性仍以工作簿和数数当前方案为准；此处只保留高频事件索引，避免把未经过项目历史核验的大表复制成“最终口径”。
+- `app_on_active`：启动游戏；`first_active` 是首次启动布尔值。
+- `tap_start`：点击开始游戏；历史表中还有 `time_stamp` 和 `game_length`，是否继续使用要按当前版本确认。
+- `tutorial_progress`：新手引导进度，使用 `step_name` 和 `section_name` 区分步骤与阶段。
 
-## 公共事件属性
+### 关卡与战斗
 
-工作簿列出 23 条公共事件属性，主要是 AB 测试、货币/道具库存、当前角色和版本等状态字段。代表性字段包括：`ab_test_group`（对象组及其 `group`、`test_name` 子属性）、`current_hero_level`、`current_soul_stone`、`current_red_stone`、`current_battle_key`、`current_use_power_point`。
+- `enter_level` 与 `game_over` 分开，分别表达进入关卡和结算；二者属性粒度不同，不能合并成一个“战斗事件”。
+- 单人、局域网、远程联机有不同事件族，例如 `enter_level_network`、`game_over_network`、`remote_enter_level` 和远联结算事件；不能跨模式混算。
+- `skill_msg`、`boss_battle`、`boss_msg`、`equip_skills_oa` 等对象组要按子属性逐项验收；对象组不可嵌套。
 
-## 用户属性
+### 经济、商业化和广告
 
-工作簿列出 69 条用户属性，包含账号与设备、版本、累计行为、拥有内容、付费累计、角色等级和对象组状态等。代表性对象组包括：
+- 资源产出/消耗事件使用数量、来源、变化后余额等字段；要检查负数、小数和空值是否符合该事件的说明。
+- `purchases_trigger`、`purchases_success`、`purchases_fail` 与服务端订单事件分开；金额、商品 ID、支付结果按订单链路确认。
+- 广告点击、播放成功、播放失败、下载点击和关闭分别建事件，不能把“有广告事件”当成“广告成功”。
 
-- `asura_power_use`：修罗之力方案页及已用/未用数量。
-- `equipped_esr_balls`：已装备道魂及词条、角色子属性。
-- `total_role_level`：用户拥有角色及等级。
+### 方案中的历史遗留
 
-## 版本与历史注意点
+- `enter_level`/`game_over` 仍可看到早期字符串字段、重复列表字段和后续停止上报字段；查询前必须按版本确认，不要把历史字段当作现行字段。
+- 方案更新记录中明确停止过 `weapon_ce`、`weapon_quality`、`weapon_ce_list`、`equip_mainSkill`、`equip_style`、`equip_secondSkill`、`runningDataSkills` 等字段；当前使用应以数数线上方案和生效版本为准。
+- 方案中出现 `weapon_upgrade` 的“武器铭刻没上报”待确认记录，不能直接用它判断武器升级数据完整。
 
-- 事件名中同时存在通用事件、玩法事件、网络事件、系统错误事件、支付事件和带年份/月后缀的历史或活动事件（例如 `_202606`、`_2023`）。后缀不是可跨项目复用的命名规则，必须按项目历史判断是否仍在线。
-- `enter_level`、`game_over` 及其网络版本包含大量对象/对象组快照；验收时父属性和每一个子属性都要独立核验。
-- 同一业务域存在 `purchases_trigger`、`purchases_success`、`purchases_fail`、`order_finish`、`claim_order`、`refund_order` 等生命周期事件，不应只凭事件名推断“付费人数”或“订单成功”。
-- 表格中大量单元格出现 `161` 等值，且部分显示名/说明为空；本页不对这些值进行语义猜测。
+## 版本联动
+
+2026 年版本日志显示 v3.4.0 引入神话阵营、彼岸试炼、塔拉卡试炼和灯神活动，v3.5.0 引入六周年活动和存档覆盖保护。这些内容是否有对应埋点，要先在方案表查事件和版本记录，再到版本看板验收；不能因为更新日志出现功能名就推断存在同名事件。
+
+## 证据
+
+- [战魂铭人埋点数据设计方案](https://chillyroom.feishu.cn/wiki/VQPKwciGWiuK2EkFPsAcYjqJnTd)
+- [战魂铭人更新日志与游戏内邮件](https://chillyroom.feishu.cn/wiki/wikcnAs9kBF3ZgbYzZ6T9xQCfpd)
+- 本地参考表：`C:\Users\Administrator\Downloads\战魂铭人_埋点方案_20260820.xlsx`。本地表只作为离线比对，不替代线上方案。
