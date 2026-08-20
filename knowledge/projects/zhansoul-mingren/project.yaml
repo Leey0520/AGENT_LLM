@@ -1,0 +1,17 @@
+project: zhansoul-mingren
+display_name: 战魂铭人
+aliases: [战魂铭人]
+owners: []
+thinkingdata:
+  app_id: null
+  project_id: null
+  query_cluster: null
+timezone:
+  name: null
+  day_start: null
+identity:
+  primary_subject: null
+  merge_rule: null
+data_scope:
+  available_from: null
+  observation_cutoff_rule: null

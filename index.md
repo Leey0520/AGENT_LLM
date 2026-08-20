@@ -8,6 +8,7 @@
 | --- | --- | --- | --- | --- | --- |
 | platform.overview | 分析平台知识总览 | - | approved | 2026-08-20 | [打开](./knowledge/platform/README.md) |
 | platform.tool-boundaries | GitLab Codex 数数与飞书工具边界 | - | approved | 2026-08-20 | [打开](./knowledge/platform/tool-boundaries.md) |
+| platform.thinkingdata.overview | ThinkingData 数数平台知识总览 | - | draft | 2026-08-20 | [打开](./knowledge/platform/thinkingdata/README.md) |
 
 ## 通用方法
 
@@ -27,3 +28,5 @@
 | project._template.known-data-issues | 已知数据问题模板 | _template | draft | 2026-08-20 | [打开](./knowledge/projects/_template/decisions/known-data-issues.md) |
 | project._template.game-overview | 游戏业务概览模板 | _template | draft | 2026-08-20 | [打开](./knowledge/projects/_template/business/game-overview.md) |
 | project._template.metric-template | 指标口径模板 | _template | draft | 2026-08-20 | [打开](./knowledge/projects/_template/metrics/metric-template.md) |
+| project.dajianghu.tracking-plan-current | 大江湖当前埋点方案索引（2026-08-20） | dajianghu | draft | 2026-08-20 | [打开](./knowledge/projects/dajianghu/data-contract/tracking-plan-current.md) |
+| project.zhansoul-mingren.tracking-plan-current | 战魂铭人当前埋点方案索引（2026-08-20） | zhansoul-mingren | draft | 2026-08-20 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/tracking-plan-current.md) |
