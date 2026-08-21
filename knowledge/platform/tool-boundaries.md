@@ -22,9 +22,9 @@ Codex 通过本地工作区读取 Markdown。GitLab MCP 不是读取正文的必
 
 ## Codex
 
-- `AGENTS.md` 约束每次分析的来源、审批和安全规则。
-- `.agents/skills/` 告诉 Agent 如何路由知识及调用已经安装的专业 Skill。
-- `.codex/hooks.json` 只做确定性的同步和安全拦截，不替代业务判断。
+- 用户级 `C:\Users\Administrator\.codex\AGENTS.md` 约束所有项目的来源、审批和安全规则。
+- 用户级 `C:\Users\Administrator\.codex\skills\` 是所有项目共用的工作流 Skill；它们按任务路由到本地知识库的 `knowledge/projects/<project>/`，不把某个游戏的口径写进通用 Skill。
+- 用户级 `C:\Users\Administrator\.codex\hooks.json` 和 `C:\Users\Administrator\.codex\hooks\` 是所有项目共用的 Hook，只做确定性的同步和安全拦截，不替代业务判断。
 - Hook 首次出现或内容变化后需要在 `/hooks` 中重新审查和信任。
 
 ## 数数

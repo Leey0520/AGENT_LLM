@@ -2,13 +2,15 @@
 
 这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的唯一正式知识仓库。`main` 保存已进入版本管理的知识；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
 
+本仓库只保存共享知识和同步脚本。Codex 的通用 Skill 与 Hook 位于用户级全局目录 `C:\Users\Administrator\.codex\skills\`、`C:\Users\Administrator\.codex\hooks.json` 和 `C:\Users\Administrator\.codex\hooks\`，因此从任何其他项目目录启动 Codex 时也能使用；全局 Hook 通过 `LLM_WIKI_ROOT`（默认本机知识库路径）同步本仓库。
+
 ## 工作链路
 
 ```text
 GitLab main
-    ↓ SessionStart 安全同步
+    ↓ 全局 SessionStart Hook 安全同步
 本地 Git 工作区
-    ↓ AGENTS.md + .agents/skills
+    ↓ Codex 全局 AGENTS.md + 全局 Skills
 Codex 分析流程
     ↓ ae-analysis Skill + 已授权 ae-cli
 数数平台
@@ -24,9 +26,10 @@ knowledge 正式知识 + index.md
 - `knowledge/platform/`：数数、飞书、Git 等系统级操作边界。
 - `knowledge/methods/`：跨项目通用的分析方法和检查清单，不保存某个游戏的最终口径。
 - `knowledge/projects/<project>/`：该游戏独有的业务、埋点、属性、指标和已知问题。
-- `AGENTS.md`：Codex 每次进入仓库都会读取的总规则。
-- `.agents/skills/`：可复用的分析和知识维护工作流。
-- `.codex/`：项目级 Codex 配置及安全 Hook。
+- `C:\Users\Administrator\.codex\AGENTS.md`：Codex 用户级全局总规则。
+- `scripts/`：知识库同步、索引和校验脚本，供全局 Skill/Hook 调用。
+- `C:\Users\Administrator\.codex\skills\`：Codex 用户级全局 Skill，服务所有项目。
+- `C:\Users\Administrator\.codex\hooks.json` 和 `C:\Users\Administrator\.codex\hooks\`：Codex 用户级全局 Hook，服务所有项目。
 - `inbox/`：AI 或人工尚未复核的候选知识。
 
 ## 首次使用
@@ -38,7 +41,7 @@ git clone https://gitlab.chilly.room/liyanzhun/llm_wiki.git
 Set-Location .\llm_wiki
 ```
 
-首次打开或 Hook 修改后，在 Codex 中执行 `/hooks`，审查并信任本仓库的项目 Hook。项目未被信任时，Codex 会忽略 `.codex/config.toml` 和项目 Hook，但仍会读取仓库中的普通文件。
+首次迁移或 Hook 修改后，在 Codex 中执行 `/hooks`，审查并信任用户级全局 Hook。全局 Hook 未被信任时，Codex 会跳过它们，但仍可读取知识库普通文件。
 
 ## 日常同步
 
