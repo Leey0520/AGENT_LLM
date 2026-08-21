@@ -57,4 +57,4 @@ tags: [zhansoul-mingren, tracking, baseline, thinkingdata]
 
 - [战魂铭人埋点数据设计方案](https://chillyroom.feishu.cn/wiki/VQPKwciGWiuK2EkFPsAcYjqJnTd)
 - [战魂铭人更新日志与游戏内邮件](https://chillyroom.feishu.cn/wiki/wikcnAs9kBF3ZgbYzZ6T9xQCfpd)
-- 本地参考表：`C:\Users\Administrator\Downloads\战魂铭人_埋点方案_20260820.xlsx`。本地表只作为离线比对，不替代线上方案。
+- 参考表《战魂铭人_埋点方案_20260820.xlsx》只作为离线比对，不替代线上方案。

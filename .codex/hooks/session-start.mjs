@@ -1,7 +1,29 @@
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const knowledgeRoot = process.env.LLM_WIKI_ROOT || 'C:\\Users\\Administrator\\Documents\\通用项目';
+let knowledgeRoot = process.env.LLM_WIKI_ROOT;
+if (!knowledgeRoot) {
+  try {
+    knowledgeRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: process.cwd(),
+      encoding: 'utf8'
+    }).trim();
+  } catch {
+    knowledgeRoot = '';
+  }
+}
+
+if (!knowledgeRoot) {
+  process.stdout.write(JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'SessionStart',
+      additionalContext: '未设置 LLM_WIKI_ROOT，无法定位共享知识库；请先配置知识库根目录。'
+    }
+  }));
+  process.exit(0);
+}
+
 const { syncKnowledge } = await import(
   pathToFileURL(join(knowledgeRoot, 'scripts', 'sync-knowledge.mjs')).href
 );

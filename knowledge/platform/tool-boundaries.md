@@ -20,13 +20,13 @@ https://gitlab.chilly.room/liyanzhun/llm_wiki.git
 
 Codex 通过本地工作区读取 Markdown。GitLab MCP 不是读取正文的必要条件；它只在需要操作 Issue、Merge Request、Pipeline 或其他 GitLab 协作对象时使用。
 
-GitLab `main` 同时保存知识正文和 Codex 运行源文件：`AGENTS.md`、`.agents/skills/`、`.codex/hooks.json`、`.codex/hooks/` 和 `.codex/config.toml`。用户级 `C:\Users\Administrator\.codex\` 是运行副本；从仓库根目录执行 `node scripts/install-global-codex.mjs` 将源文件安装到全局目录。
+GitLab `main` 同时保存知识正文和 Codex 运行源文件：`AGENTS.md`、`.agents/skills/`、`.codex/hooks.json`、`.codex/hooks/` 和 `.codex/config.toml`。用户级 `$CODEX_HOME` 是运行副本；从仓库根目录执行 `node scripts/install-global-codex.mjs` 将源文件安装到全局目录。
 
 ## Codex
 
-- Git 管理的 `AGENTS.md` 安装到用户级 `C:\Users\Administrator\.codex\AGENTS.md` 后，约束所有项目的来源、审批和安全规则。
-- Git 管理的 `.agents/skills/` 安装到用户级 `C:\Users\Administrator\.codex\skills\` 后，成为所有项目共用的工作流 Skill；它们按任务路由到本地知识库的 `knowledge/projects/<project>/`，不把某个游戏的口径写进通用 Skill。
-- Git 管理的 `.codex/hooks.json` 和 `.codex/hooks/` 安装到用户级 `C:\Users\Administrator\.codex\` 后，成为所有项目共用的 Hook，只做确定性的同步和安全拦截，不替代业务判断。
+- Git 管理的 `AGENTS.md` 安装到用户级 `$CODEX_HOME/AGENTS.md` 后，约束所有项目的来源、审批和安全规则。
+- Git 管理的 `.agents/skills/` 安装到用户级 `$CODEX_HOME/skills/` 后，成为所有项目共用的工作流 Skill；它们按任务路由到本地知识库的 `knowledge/projects/<project>/`，不把某个游戏的口径写进通用 Skill。
+- Git 管理的 `.codex/hooks.json` 和 `.codex/hooks/` 安装到用户级 `$CODEX_HOME/` 后，成为所有项目共用的 Hook，只做确定性的同步和安全拦截，不替代业务判断。
 - Hook 首次出现或内容变化后需要在 `/hooks` 中重新审查和信任。
 
 ## 数数

@@ -7,7 +7,7 @@ description: Use the local GitLab Markdown knowledge base to plan and perform ga
 
 ## Shared knowledge-base location
 
-Use `LLM_WIKI_ROOT` when it is set; otherwise use `C:\Users\Administrator\Documents\通用项目` as the knowledge-base root. Resolve `index.md`, `knowledge/platform/`, and `knowledge/projects/` from that root, not from the current game project's working directory. The current working directory may be a different game repository.
+Use `LLM_WIKI_ROOT` as the knowledge-base root. Resolve `index.md`, `knowledge/platform/`, and `knowledge/projects/` from that root, not from the current game project's working directory. The current working directory may be a different game repository; if `LLM_WIKI_ROOT` is unavailable, stop and ask for the knowledge-base root instead of guessing.
 
 ## Mandatory routing
 

@@ -1,26 +1,29 @@
 # 游戏数据分析知识库
 
-这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的唯一正式知识仓库和运行配置源。`main` 同时保存知识正文、Skills、Hooks 和 `AGENTS.md`；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
+这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的正式知识仓库与运行配置源。`main` 同时保存知识正文、Skills、Hooks 和 `AGENTS.md`；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
 
-仓库中的 `.agents/`、`.codex/` 和 `AGENTS.md` 是唯一受 Git 管理的源文件；用户级 `C:\Users\Administrator\.codex\` 是供 Codex 从任意项目目录运行的安装副本。执行 `node scripts/install-global-codex.mjs` 可将仓库源文件同步到用户级全局目录，不会覆盖模型、MCP 或授权配置。
+仓库中的 `.agents/`、`.codex/` 和 `AGENTS.md` 是受 Git 管理的源文件；用户级 `$CODEX_HOME` 是供 Codex 从任意项目目录运行的安装副本。执行 `node scripts/install-global-codex.mjs` 可将仓库源文件同步到用户级全局目录，不会覆盖模型、MCP 或授权配置。
 
-## 工作链路
+## 工作流总览
 
 ```text
-GitLab main（知识 + Skill/Hook/AGENTS 源文件）
-    ↓ git pull / 安全快进
-本地 Git 工作区
-    ↓ install-global-codex.mjs
-Codex 用户级全局运行副本
-    ↓ 全局 AGENTS.md + 全局 Skills/Hooks
-Codex 分析流程
-    ↓ ae-analysis Skill + 已授权 ae-cli
-数数平台
-    ↓ 分析结果
-inbox/generated 候选知识
-    ↓ 人工复核 + Merge Request
-knowledge 正式知识 + index.md
+GitLab main（知识、Skill、Hook、AGENTS 源文件）
+    ↓ 同步源文件并按需安装全局运行副本
+本地知识库 + Codex 全局运行环境
 ```
+
+不同任务使用不同工作流，不是所有任务都经过数数查询：
+
+| 工作流 | 触发场景 | 主要读取内容 | 主要结果 |
+| --- | --- | --- | --- |
+| 知识维护 | 新增、修订、审核、整理知识 | `index.md`、Front Matter 契约、目标页面 | 正式知识或 `inbox/generated/` 候选、索引和校验结果 |
+| 游戏数据分析 | 指标、留存、付费、行为、进度、SQL | ThinkingData 平台知识、目标项目知识、现有看板 | 分析方案、看板结果或经批准后执行的 SQL |
+| 埋点方案设计 | 新版本、新功能、需求或 PRD | 公司埋点规范、项目埋点基线、项目历史问题、需求文档 | 可评审的项目埋点方案 |
+| 埋点验收 | 上线版本或线上埋点检查 | 验收流程、版本看板、项目看板、数数验收能力 | 验收结论、异常清单和必要的 SQL 证据 |
+| 报告与看板交付 | 将已确认结果交付团队 | 已验证的分析结果、飞书交付规范 | 飞书文档、表格、看板或分析资产 |
+| 平台与工具操作 | 数数、飞书、GitLab、CLI、权限问题 | `knowledge/platform/` 与对应工具 Skill | 可验证的操作结果，不改变业务口径 |
+
+所有工作流共享“先定位知识、再确认项目口径”的原则，但具体步骤由对应 Skill 和项目知识决定。
 
 各层职责：
 
@@ -28,9 +31,9 @@ knowledge 正式知识 + index.md
 - `knowledge/platform/`：数数、飞书、Git 等系统级操作边界。
 - `knowledge/methods/`：跨项目通用的分析方法和检查清单，不保存某个游戏的最终口径。
 - `knowledge/projects/<project>/`：该游戏独有的业务、埋点、属性、指标和已知问题。
-- `AGENTS.md`：Git 管理的全局规则源文件；安装到 `C:\Users\Administrator\.codex\AGENTS.md` 后服务所有项目。
-- `.agents/skills/`：Git 管理的全局 Skill 源文件；安装到 `C:\Users\Administrator\.codex\skills\` 后服务所有项目。
-- `.codex/hooks.json` 和 `.codex/hooks/`：Git 管理的全局 Hook 源文件；安装到 `C:\Users\Administrator\.codex\` 后服务所有项目。
+- `AGENTS.md`：Git 管理的全局规则源文件；安装到 `$CODEX_HOME/AGENTS.md` 后服务所有项目。
+- `.agents/skills/`：Git 管理的全局 Skill 源文件；安装到 `$CODEX_HOME/skills/` 后服务所有项目。
+- `.codex/hooks.json` 和 `.codex/hooks/`：Git 管理的全局 Hook 源文件；安装到 `$CODEX_HOME/` 后服务所有项目。
 - `scripts/`：知识库同步、索引、校验和全局运行副本安装脚本。
 - `inbox/`：AI 或人工尚未复核的候选知识。
 

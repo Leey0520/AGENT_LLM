@@ -12,7 +12,8 @@ function detectRepositoryRoot() {
       encoding: 'utf8'
     }).trim();
   } catch {
-    return process.env.LLM_WIKI_ROOT || 'C:\\Users\\Administrator\\Documents\\通用项目';
+    if (process.env.LLM_WIKI_ROOT) return process.env.LLM_WIKI_ROOT;
+    throw new Error('无法定位知识库根目录；请在知识库仓库中运行，或设置 LLM_WIKI_ROOT。');
   }
 }
 

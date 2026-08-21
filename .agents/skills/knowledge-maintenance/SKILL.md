@@ -7,9 +7,9 @@ description: Create, restructure, review, validate, index, and safely synchroniz
 
 ## Shared knowledge-base location
 
-Use `$knowledgeRoot = if ($env:LLM_WIKI_ROOT) { $env:LLM_WIKI_ROOT } else { 'C:\Users\Administrator\Documents\通用项目' }` as the knowledge-base root. All paths and commands below are relative to that root, even when Codex is working in another project directory.
+Use `$knowledgeRoot = $env:LLM_WIKI_ROOT` as the knowledge-base root. All paths and commands below are relative to that root, even when Codex is working in another project directory; if it is unset, stop and ask for the knowledge-base root instead of guessing.
 
-Read [references/document-contract.md](C:\Users\Administrator\.codex\skills\knowledge-maintenance\references\document-contract.md) before creating or promoting knowledge pages.
+Read the skill-local `references/document-contract.md` before creating or promoting knowledge pages.
 
 ## Workflow
 
