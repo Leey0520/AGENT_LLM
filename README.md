@@ -1,16 +1,18 @@
 # 游戏数据分析知识库
 
-这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的唯一正式知识仓库。`main` 保存已进入版本管理的知识；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
+这是 Codex、数数（ThinkingData/AE）和飞书分析工作流的唯一正式知识仓库和运行配置源。`main` 同时保存知识正文、Skills、Hooks 和 `AGENTS.md`；Codex 通过本地 Git 工作区直接读取 Markdown，不需要让 Skill 逐页调用 GitLab API。
 
-本仓库只保存共享知识和同步脚本。Codex 的通用 Skill 与 Hook 位于用户级全局目录 `C:\Users\Administrator\.codex\skills\`、`C:\Users\Administrator\.codex\hooks.json` 和 `C:\Users\Administrator\.codex\hooks\`，因此从任何其他项目目录启动 Codex 时也能使用；全局 Hook 通过 `LLM_WIKI_ROOT`（默认本机知识库路径）同步本仓库。
+仓库中的 `.agents/`、`.codex/` 和 `AGENTS.md` 是唯一受 Git 管理的源文件；用户级 `C:\Users\Administrator\.codex\` 是供 Codex 从任意项目目录运行的安装副本。执行 `node scripts/install-global-codex.mjs` 可将仓库源文件同步到用户级全局目录，不会覆盖模型、MCP 或授权配置。
 
 ## 工作链路
 
 ```text
-GitLab main
-    ↓ 全局 SessionStart Hook 安全同步
+GitLab main（知识 + Skill/Hook/AGENTS 源文件）
+    ↓ git pull / 安全快进
 本地 Git 工作区
-    ↓ Codex 全局 AGENTS.md + 全局 Skills
+    ↓ install-global-codex.mjs
+Codex 用户级全局运行副本
+    ↓ 全局 AGENTS.md + 全局 Skills/Hooks
 Codex 分析流程
     ↓ ae-analysis Skill + 已授权 ae-cli
 数数平台
@@ -26,10 +28,10 @@ knowledge 正式知识 + index.md
 - `knowledge/platform/`：数数、飞书、Git 等系统级操作边界。
 - `knowledge/methods/`：跨项目通用的分析方法和检查清单，不保存某个游戏的最终口径。
 - `knowledge/projects/<project>/`：该游戏独有的业务、埋点、属性、指标和已知问题。
-- `C:\Users\Administrator\.codex\AGENTS.md`：Codex 用户级全局总规则。
-- `scripts/`：知识库同步、索引和校验脚本，供全局 Skill/Hook 调用。
-- `C:\Users\Administrator\.codex\skills\`：Codex 用户级全局 Skill，服务所有项目。
-- `C:\Users\Administrator\.codex\hooks.json` 和 `C:\Users\Administrator\.codex\hooks\`：Codex 用户级全局 Hook，服务所有项目。
+- `AGENTS.md`：Git 管理的全局规则源文件；安装到 `C:\Users\Administrator\.codex\AGENTS.md` 后服务所有项目。
+- `.agents/skills/`：Git 管理的全局 Skill 源文件；安装到 `C:\Users\Administrator\.codex\skills\` 后服务所有项目。
+- `.codex/hooks.json` 和 `.codex/hooks/`：Git 管理的全局 Hook 源文件；安装到 `C:\Users\Administrator\.codex\` 后服务所有项目。
+- `scripts/`：知识库同步、索引、校验和全局运行副本安装脚本。
 - `inbox/`：AI 或人工尚未复核的候选知识。
 
 ## 首次使用
@@ -39,9 +41,10 @@ knowledge 正式知识 + index.md
 ```powershell
 git clone https://gitlab.chilly.room/liyanzhun/llm_wiki.git
 Set-Location .\llm_wiki
+node scripts/install-global-codex.mjs
 ```
 
-首次迁移或 Hook 修改后，在 Codex 中执行 `/hooks`，审查并信任用户级全局 Hook。全局 Hook 未被信任时，Codex 会跳过它们，但仍可读取知识库普通文件。
+首次安装或 Hook 修改后，在 Codex 中执行 `/hooks`，审查并信任用户级全局 Hook。全局 Hook 未被信任时，Codex 会跳过它们，但仍可读取知识库普通文件。
 
 ## 日常同步
 
@@ -51,9 +54,10 @@ Set-Location .\llm_wiki
 
 ```powershell
 node scripts/sync-knowledge.mjs
+node scripts/install-global-codex.mjs
 ```
 
-如果存在本地修改、领先提交或分叉，脚本只提示并停止，不覆盖文件。正式知识建议通过分支和 Merge Request 进入 `main`。
+如果存在本地修改、领先提交或分叉，知识库同步脚本只提示并停止，不覆盖文件。完成知识库同步后再运行安装脚本，更新 Codex 全局运行副本。正式知识和运行源文件建议通过分支和 Merge Request 进入 `main`。
 
 ## 新建游戏项目
 
