@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "deny": [
+      "Read(**/.ae-cli/**)",
+      "Read(**/secure-tokens/**)",
+      "Read(**/auth.json)",
+      "Read(**/credentials.json)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Edit(**/.ae-cli/**)",
+      "Edit(**/secure-tokens/**)",
+      "Edit(**/auth.json)",
+      "Edit(**/credentials.json)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Write(**/.ae-cli/**)",
+      "Write(**/secure-tokens/**)",
+      "Write(**/auth.json)",
+      "Write(**/credentials.json)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git clean -f:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(git branch -D:*)"
+    ]
+  },
+  "env": {
+    "LLM_WIKI_ROOT": "$LLM_WIKI_ROOT",
+    "LARKSUITE_CLI_NO_UPDATE_NOTIFIER": "1",
+    "LARKSUITE_CLI_NO_SKILLS_NOTIFIER": "1"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_CONFIG_DIR/hooks/session-start.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_CONFIG_DIR/hooks/pre-tool-use.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

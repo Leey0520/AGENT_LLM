@@ -11,3 +11,9 @@ secure-tokens/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# 本地临时产物：保留在磁盘上，但不入库，避免长期未跟踪状态阻塞会话启动时的同步快进
+.tmp-app-schema/
+scripts/_tmp_*
+*.bak
+.claude/hooks/.probe
