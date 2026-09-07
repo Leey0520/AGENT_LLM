@@ -21,6 +21,7 @@
 | method.tracking-design-sop | 埋点方案设计工作流 | - | draft | 2026-08-20 | [打开](./knowledge/methods/tracking-design-sop.md) |
 | method.tracking-acceptance-sop | 埋点验收决策工作流 | - | draft | 2026-08-20 | [打开](./knowledge/methods/tracking-acceptance-sop.md) |
 | method.overview | 通用分析方法总览 | - | approved | 2026-08-20 | [打开](./knowledge/methods/README.md) |
+| method.game-workspace-convention | 游戏工作目录与双平台协作约定 | - | draft | 2026-09-07 | [打开](./knowledge/methods/game-workspace-convention.md) |
 | method.data-quality-checklist | 游戏数据分析质量检查清单 | - | approved | 2026-08-20 | [打开](./knowledge/methods/data-quality-checklist.md) |
 | method.project-organization | 游戏项目知识组织规则 | - | approved | 2026-08-20 | [打开](./knowledge/projects/README.md) |
 
