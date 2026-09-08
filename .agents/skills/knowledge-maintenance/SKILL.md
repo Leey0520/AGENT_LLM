@@ -7,7 +7,11 @@ description: Create, restructure, review, validate, index, and safely synchroniz
 
 ## Shared knowledge-base location
 
-Use `$knowledgeRoot = $env:LLM_WIKI_ROOT` as the knowledge-base root. All paths and commands below are relative to that root, even when Codex is working in another project directory; if it is unset, stop and ask for the knowledge-base root instead of guessing.
+The installed global copy of this Skill is bound to the local knowledge-base root below:
+
+`__INSTALLED_KNOWLEDGE_ROOT__`
+
+Set `$knowledgeRoot` to that path. All paths and commands below are relative to it, even when Codex is working in another project directory. If the marker above is still unresolved, this is the portable source copy: locate its Git repository root and run `node scripts/install-global-codex.mjs` or `node scripts/install-global-claude.mjs` before using it globally. Do not require a runtime environment variable to locate the knowledge base.
 
 Read the skill-local `references/document-contract.md` before creating or promoting knowledge pages.
 

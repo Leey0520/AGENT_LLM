@@ -33,7 +33,6 @@
     ]
   },
   "env": {
-    "LLM_WIKI_ROOT": "$LLM_WIKI_ROOT",
     "LARKSUITE_CLI_NO_UPDATE_NOTIFIER": "1",
     "LARKSUITE_CLI_NO_SKILLS_NOTIFIER": "1"
   },

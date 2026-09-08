@@ -12,8 +12,7 @@ function detectRepositoryRoot() {
       encoding: 'utf8'
     }).trim();
   } catch {
-    if (process.env.LLM_WIKI_ROOT) return process.env.LLM_WIKI_ROOT;
-    throw new Error('无法定位知识库根目录；请在知识库仓库中运行，或设置 LLM_WIKI_ROOT。');
+    throw new Error('无法定位知识库根目录；请在知识库仓库中运行安装脚本。');
   }
 }
 
@@ -21,16 +20,9 @@ function globalClaudeRoot() {
   return process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 }
 
-// settings.json 是入库的可移植源文件，安装时展开两个占位符：
-// $CLAUDE_CONFIG_DIR → 已安装 hook 的绝对路径，保证 Windows 与 POSIX 都能定位；
-// $LLM_WIKI_ROOT     → 本机知识库仓库根目录。在非 Git 的游戏工作目录开会话时，
-//                      hook 无法靠 git rev-parse 定位仓库，必须依赖这个环境变量。
-async function renderSettings(sourcePath, claudeRoot, repositoryRoot) {
+// settings.json 是入库的可移植源文件；安装时只展开已安装 hook 的路径。
+async function renderManagedSettings(sourcePath, claudeRoot) {
   const settings = JSON.parse(await readFile(sourcePath, 'utf8'));
-
-  if (settings.env && settings.env.LLM_WIKI_ROOT === '$LLM_WIKI_ROOT') {
-    settings.env.LLM_WIKI_ROOT = repositoryRoot;
-  }
 
   for (const groups of Object.values(settings.hooks || {})) {
     for (const group of groups || []) {
@@ -43,7 +35,90 @@ async function renderSettings(sourcePath, claudeRoot, repositoryRoot) {
       }
     }
   }
-  return `${JSON.stringify(settings, null, 2)}\n`;
+  return settings;
+}
+
+async function readExistingSettings(settingsPath) {
+  try {
+    return JSON.parse(await readFile(settingsPath, 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return {};
+    throw new Error(`现有 Claude settings.json 无法解析，已停止安装且未覆盖：${error?.message ?? error}`);
+  }
+}
+
+function isManagedHookGroup(group) {
+  return (group?.hooks || []).some((handler) => {
+    const command = String(handler?.command || '');
+    return /[\\/]hooks[\\/](?:session-start|pre-tool-use)\.mjs(?:\"|\s|$)/i.test(command);
+  });
+}
+
+function mergeHooks(existingHooks = {}, managedHooks = {}) {
+  const merged = { ...existingHooks };
+  for (const [eventName, managedGroups] of Object.entries(managedHooks)) {
+    const existingGroups = Array.isArray(existingHooks[eventName])
+      ? existingHooks[eventName].filter((group) => !isManagedHookGroup(group))
+      : [];
+    merged[eventName] = [...existingGroups, ...(managedGroups || [])];
+  }
+  return merged;
+}
+
+function mergeSettings(existing, managed) {
+  const existingDeny = Array.isArray(existing?.permissions?.deny)
+    ? existing.permissions.deny
+    : [];
+  const managedDeny = Array.isArray(managed?.permissions?.deny)
+    ? managed.permissions.deny
+    : [];
+
+  return {
+    ...existing,
+    ...managed,
+    env: {
+      ...(existing['env'] || {}),
+      ...(managed['env'] || {})
+    },
+    permissions: {
+      ...(existing.permissions || {}),
+      ...(managed.permissions || {}),
+      deny: [...new Set([...existingDeny, ...managedDeny])]
+    },
+    hooks: mergeHooks(existing.hooks, managed.hooks)
+  };
+}
+
+function renderInstalledJavaScript(content, repositoryRoot) {
+  return content.replaceAll(
+    '__INSTALLED_KNOWLEDGE_ROOT__',
+    JSON.stringify(repositoryRoot).slice(1, -1)
+  );
+}
+
+function renderInstalledText(content, repositoryRoot) {
+  return content.replaceAll('__INSTALLED_KNOWLEDGE_ROOT__', repositoryRoot);
+}
+
+async function installRenderedHook(sourcePath, destinationPath, repositoryRoot) {
+  const source = await readFile(sourcePath, 'utf8');
+  await writeFile(destinationPath, renderInstalledJavaScript(source, repositoryRoot), 'utf8');
+}
+
+async function installRenderedSkills(sourceSkills, destinationSkills, repositoryRoot) {
+  await cp(sourceSkills, destinationSkills, { recursive: true, force: true });
+  const entries = await readdir(sourceSkills, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const sourceSkill = path.join(sourceSkills, entry.name, 'SKILL.md');
+    const destinationSkill = path.join(destinationSkills, entry.name, 'SKILL.md');
+    try {
+      const source = await readFile(sourceSkill, 'utf8');
+      await writeFile(destinationSkill, renderInstalledText(source, repositoryRoot), 'utf8');
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
 }
 
 async function listSkills(sourceSkills) {
@@ -62,6 +137,7 @@ export async function installGlobalClaude({
   const sourceSkills = path.join(repositoryRoot, '.agents', 'skills');
   const sourceHooks = path.join(repositoryRoot, '.claude', 'hooks');
   const sourceSettings = path.join(repositoryRoot, '.claude', 'settings.json');
+  const destinationSettings = path.join(claudeRoot, 'settings.json');
 
   await mkdir(path.join(claudeRoot, 'skills'), { recursive: true });
   await mkdir(path.join(claudeRoot, 'hooks'), { recursive: true });
@@ -71,11 +147,18 @@ export async function installGlobalClaude({
     path.join(claudeRoot, 'CLAUDE.md'),
     { force: true }
   );
-  await cp(sourceSkills, path.join(claudeRoot, 'skills'), { recursive: true, force: true });
+  await installRenderedSkills(sourceSkills, path.join(claudeRoot, 'skills'), repositoryRoot);
   await cp(sourceHooks, path.join(claudeRoot, 'hooks'), { recursive: true, force: true });
+  await installRenderedHook(
+    path.join(sourceHooks, 'session-start.mjs'),
+    path.join(claudeRoot, 'hooks', 'session-start.mjs'),
+    repositoryRoot
+  );
+  const existingSettings = await readExistingSettings(destinationSettings);
+  const managedSettings = await renderManagedSettings(sourceSettings, claudeRoot);
   await writeFile(
-    path.join(claudeRoot, 'settings.json'),
-    await renderSettings(sourceSettings, claudeRoot, repositoryRoot),
+    destinationSettings,
+    `${JSON.stringify(mergeSettings(existingSettings, managedSettings), null, 2)}\n`,
     'utf8'
   );
 
