@@ -7,7 +7,11 @@ description: Use the local GitLab Markdown knowledge base to plan and perform ga
 
 ## Shared knowledge-base location
 
-Use `LLM_WIKI_ROOT` as the knowledge-base root. Resolve `index.md`, `knowledge/platform/`, and `knowledge/projects/` from that root, not from the current game project's working directory. The current working directory may be a different game repository; if `LLM_WIKI_ROOT` is unavailable, stop and ask for the knowledge-base root instead of guessing.
+The installed global copy of this Skill is bound to the local knowledge-base root below:
+
+`__INSTALLED_KNOWLEDGE_ROOT__`
+
+Resolve `index.md`, `knowledge/platform/`, and `knowledge/projects/` from that root, not from the current game project's working directory. The current working directory may be a different game repository. If the marker above is still unresolved, this is the portable source copy: locate its Git repository root and run `node scripts/install-global-codex.mjs` or `node scripts/install-global-claude.mjs` before using it globally. Do not require a runtime environment variable to locate the knowledge base.
 
 ## Mandatory routing
 

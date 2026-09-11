@@ -2,7 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-let knowledgeRoot = process.env.LLM_WIKI_ROOT;
+const configuredKnowledgeRoot = "__INSTALLED_KNOWLEDGE_ROOT__";
+const unresolvedKnowledgeRoot = '__' + 'INSTALLED_KNOWLEDGE_ROOT__';
+
+let knowledgeRoot = configuredKnowledgeRoot === unresolvedKnowledgeRoot
+  ? ''
+  : configuredKnowledgeRoot;
 if (!knowledgeRoot) {
   try {
     knowledgeRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -18,17 +23,31 @@ if (!knowledgeRoot) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'SessionStart',
-      additionalContext: '未设置 LLM_WIKI_ROOT，无法定位共享知识库；请先配置知识库根目录。'
+      additionalContext: '当前 Hook 尚未绑定本机知识库。请在知识库仓库中运行 node scripts/install-global-codex.mjs。'
     }
   }));
   process.exit(0);
 }
 
-const { syncKnowledge } = await import(
-  pathToFileURL(join(knowledgeRoot, 'scripts', 'sync-knowledge.mjs')).href
-);
-
-const result = syncKnowledge(knowledgeRoot);
+let result;
+try {
+  const { syncKnowledge } = await import(
+    pathToFileURL(join(knowledgeRoot, 'scripts', 'sync-knowledge.mjs')).href
+  );
+  result = syncKnowledge(knowledgeRoot);
+} catch (error) {
+  process.stdout.write(JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'SessionStart',
+      additionalContext: [
+        `知识库同步未执行：${error?.message ?? error}`,
+        `知识库位置：${knowledgeRoot}`,
+        '引用知识前先手动确认仓库同步状态。'
+      ].join('\n')
+    }
+  }));
+  process.exit(0);
+}
 const context = [
   `知识库同步状态：${result.message}`,
   `知识库位置：${knowledgeRoot}`,

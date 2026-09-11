@@ -2,7 +2,12 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-let knowledgeRoot = process.env.LLM_WIKI_ROOT;
+const configuredKnowledgeRoot = "__INSTALLED_KNOWLEDGE_ROOT__";
+const unresolvedKnowledgeRoot = '__' + 'INSTALLED_KNOWLEDGE_ROOT__';
+
+let knowledgeRoot = configuredKnowledgeRoot === unresolvedKnowledgeRoot
+  ? ''
+  : configuredKnowledgeRoot;
 if (!knowledgeRoot) {
   try {
     knowledgeRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], {
@@ -24,7 +29,7 @@ function emit(additionalContext) {
 }
 
 if (!knowledgeRoot) {
-  emit('未设置 LLM_WIKI_ROOT，无法定位共享知识库；请先配置知识库根目录。');
+  emit('当前 Hook 尚未绑定本机知识库。请在知识库仓库中运行 node scripts/install-global-claude.mjs。');
   process.exit(0);
 }
 

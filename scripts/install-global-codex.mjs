@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -12,8 +12,7 @@ function detectRepositoryRoot() {
       encoding: 'utf8'
     }).trim();
   } catch {
-    if (process.env.LLM_WIKI_ROOT) return process.env.LLM_WIKI_ROOT;
-    throw new Error('无法定位知识库根目录；请在知识库仓库中运行，或设置 LLM_WIKI_ROOT。');
+    throw new Error('无法定位知识库根目录；请在知识库仓库中运行安装脚本。');
   }
 }
 
@@ -46,6 +45,38 @@ async function renderGlobalHooks(sourcePath, codexRoot) {
   return `${JSON.stringify(hooks, null, 2)}\n`;
 }
 
+function renderInstalledJavaScript(content, repositoryRoot) {
+  return content.replaceAll(
+    '__INSTALLED_KNOWLEDGE_ROOT__',
+    JSON.stringify(repositoryRoot).slice(1, -1)
+  );
+}
+
+function renderInstalledText(content, repositoryRoot) {
+  return content.replaceAll('__INSTALLED_KNOWLEDGE_ROOT__', repositoryRoot);
+}
+
+async function installRenderedHook(sourcePath, destinationPath, repositoryRoot) {
+  const source = await readFile(sourcePath, 'utf8');
+  await writeFile(destinationPath, renderInstalledJavaScript(source, repositoryRoot), 'utf8');
+}
+
+async function installRenderedSkills(sourceSkills, destinationSkills, repositoryRoot) {
+  await cp(sourceSkills, destinationSkills, { recursive: true, force: true });
+  const entries = await readdir(sourceSkills, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const sourceSkill = path.join(sourceSkills, entry.name, 'SKILL.md');
+    const destinationSkill = path.join(destinationSkills, entry.name, 'SKILL.md');
+    try {
+      const source = await readFile(sourceSkill, 'utf8');
+      await writeFile(destinationSkill, renderInstalledText(source, repositoryRoot), 'utf8');
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+  }
+}
+
 export async function installGlobalCodex({ repositoryRoot = detectRepositoryRoot(), codexRoot = globalCodexRoot() } = {}) {
   const sourceSkills = path.join(repositoryRoot, '.agents', 'skills');
   const sourceHooks = path.join(repositoryRoot, '.codex', 'hooks');
@@ -54,8 +85,13 @@ export async function installGlobalCodex({ repositoryRoot = detectRepositoryRoot
   await mkdir(path.join(codexRoot, 'skills'), { recursive: true });
   await mkdir(path.join(codexRoot, 'hooks'), { recursive: true });
   await cp(path.join(repositoryRoot, 'AGENTS.md'), path.join(codexRoot, 'AGENTS.md'), { force: true });
-  await cp(sourceSkills, path.join(codexRoot, 'skills'), { recursive: true, force: true });
+  await installRenderedSkills(sourceSkills, path.join(codexRoot, 'skills'), repositoryRoot);
   await cp(sourceHooks, path.join(codexRoot, 'hooks'), { recursive: true, force: true });
+  await installRenderedHook(
+    sourceHookPath(repositoryRoot, 'session-start.mjs'),
+    globalHookPath(codexRoot, 'session-start.mjs'),
+    repositoryRoot
+  );
   await writeFile(
     path.join(codexRoot, 'hooks.json'),
     await renderGlobalHooks(sourceHooksConfig, codexRoot),
