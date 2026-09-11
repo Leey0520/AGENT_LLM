@@ -34,6 +34,19 @@ inbox/                       尚未复核的候选资料，不是正式口径
 
 共同原则：先从 `index.md` 定位，再读取平台规则和目标项目页面；项目口径缺失、冲突或过期时先确认，不用其他项目的定义替代。
 
+## 已有知识与待补内容
+
+完整页面列表见 [知识索引](index.md)。
+
+| 范围 | 已有内容 | 使用边界 |
+| --- | --- | --- |
+| [数数平台](knowledge/platform/thinkingdata/README.md) | 公司埋点标准、数据类型与身份、验收流程、项目空间与看板操作 | 公司流程摘要及原始资料入口，不是数数官方手册的完整镜像 |
+| [通用方法](knowledge/methods/README.md) | 数据质量检查、埋点设计、埋点验收 | 提供方法，不替代游戏口径 |
+| [战魂铭人](knowledge/projects/zhansoul-mingren/business/game-overview.md) | 业务概览、身份与付费口径、埋点基线、验收与历史问题 | APPID、数数项目 ID 等配置尚未补齐；版本背景以页面复核日期为界 |
+| [大江湖](knowledge/projects/dajianghu/data-contract/tracking-plan-current.md) | 埋点方案基线 | APPID、数数项目 ID、时区和用户主体尚未补齐 |
+
+两个游戏尚无独立的指标定义页。页面中的 `draft` 表示待最终确认，`approved` 表示已复核，`retired` 表示不再适用；收进仓库不等于已经确认。来源链接和历史版本限制是知识的依据，予以保留。
+
 ## Codex、Claude 与本地仓库
 
 GitLab `main` 是正式知识源；本地仓库是其工作副本。Codex 和 Claude 的全局运行目录是从本仓库安装的副本，服务所有游戏工作目录。更新仓库源文件后，分别执行对应安装脚本才能更新全局运行副本：
@@ -43,7 +56,7 @@ node scripts/install-global-codex.mjs
 node scripts/install-global-claude.mjs
 ```
 
-安装脚本不会把个人绝对路径、令牌或授权缓存写入 GitLab。Hook 只负责会话启动时的安全同步和环境检查，不替代知识读取；真正的知识内容始终来自本地仓库的 Markdown。
+安装后的运行副本绑定本机知识库路径；Git 管理的源文件保持可移植。SessionStart Hook 尝试同步仓库并提示位置，PreToolUse Hook 用于危险操作检查。Hook 不会自动把整库正文读入任务。
 
 首次使用时克隆一次即可：
 
@@ -60,13 +73,15 @@ node scripts/install-global-claude.mjs
 node scripts/sync-knowledge.mjs
 ```
 
-同步脚本只在工作区干净、位于 `main` 且没有本地领先或分叉时快进更新；有本地修改或分叉时停止并提示，不覆盖内容。正式变更使用分支和 Merge Request，合并到 `main` 后再同步并重新安装全局副本。
+同步脚本先 fetch；仅在工作区干净、位于 `main` 且没有本地领先或分叉时快进更新。功能分支、有本地修改或分叉时只提示，不覆盖内容。启动同步依赖 Hook 已安装、启用并获运行许可，失败时可使用上述命令手动同步。
+
+正式变更使用分支和 Merge Request 进入 `main`。只改知识正文，同步后即可读取；改动规则、Skill 或 Hook 源文件，还需运行对应安装脚本。CLI 安装和授权独立配置，不由知识库安装脚本完成。
 
 ## 新建或更新知识
 
 1. 先确认内容属于平台、通用方法、具体项目还是候选资料。
-2. 新知识先放入 `inbox/`；确认项目、来源、版本范围、APPID、时区、主体和字段含义后，再整理到 `knowledge/`。
-3. 正式页面保留稳定 `id`、状态、负责人、复核日期和来源；不要把对话提示、编辑过程、文件统计或截图说明写成知识。
+2. 未复核资料先放入 `inbox/`，AI 提炼内容放入 `inbox/generated/`；核对来源和适用范围后再整理到正式目录。项目知识另需确认身份、时区和相关字段。
+3. 正式页面保留稳定 `id`、状态、负责人、复核日期和来源；纯文字整理不改变语义复核日期。
 4. 更新后运行：
 
 ```powershell
@@ -74,6 +89,8 @@ node scripts/knowledge-tool.mjs build-index
 node scripts/knowledge-tool.mjs validate --check-index
 git diff --check
 ```
+
+可直接在 GitLab 分支编辑 Markdown，也可提供资料让 Agent 修改本地仓库；本地编辑、commit、push 和合并是不同步骤。新增游戏从 `knowledge/projects/_template/` 复制，设置唯一项目标识和页面 ID，并补齐 `project.yaml`。文档格式见 [文档契约](.agents/skills/knowledge-maintenance/references/document-contract.md)。
 
 ## 数数与飞书
 
