@@ -16,10 +16,13 @@ knowledge/
 AGENTS.md / CLAUDE.md        两个平台的全局工作约定
 schemas/                     文档格式契约
 scripts/                     同步、索引、校验和全局安装脚本
+docs/                        仓库使用说明，不属于业务知识
 inbox/                       尚未复核的候选资料，不是正式口径
 ```
 
 `knowledge/` 保存可以被后续任务直接引用的事实、规则和定义；一次分析的 SQL、截图、报告和会话记录不进入这里。项目事件、属性、用户主体、APPID、时区和指标口径只能写在对应的 `knowledge/projects/<project>/`，不能放进通用方法或 Skill。
+
+本地分析资料如何存放，见 [工作目录说明](docs/workspaces.md)。
 
 ## 当前工作流
 
