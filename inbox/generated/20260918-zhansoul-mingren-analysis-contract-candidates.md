@@ -1,9 +1,9 @@
 # 战魂铭人分析事件与属性口径候选（2026-09-18）
 
-> 状态：AI 从当前分析会话提炼的待复核候选，不是正式知识，不可直接用于线上数据执行。
+> 状态：AI 从当前分析会话提炼的原始记录。关键冲突已由用户在 2026-09-18 复核，但仍不是线上字段验证结果。
 > 项目：`zhansoul-mingren`（战魂铭人）
 > 提议复核人：`data-analytics`
-> 提议去向：核验后拆分到 `knowledge/projects/zhansoul-mingren/data-contract/`、`metrics/` 和 `decisions/known-data-issues.md`
+> 复核结果：2026-09-18 用户已确认关键冲突选择，并已写入 `data-contract/analysis-fields.md`、`data-contract/identity-and-payment.md`、`metrics/player-segmentation.md` 和 `decisions/known-data-issues.md` 的 draft 知识。
 
 ## 使用边界
 
@@ -12,6 +12,19 @@
 - 当前 `project.yaml` 尚未配置 `app_id`、`project_id` 和 `query_cluster`；未确认前不能据此执行 AE 查询。
 - 当前会话尚未形成可认定为正式口径的支付事件、退款、币种和金额结算定义。
 
+## 2026-09-18 复核结论
+
+- 渠道采用 `#vp@channel_fix`。
+- 商品采用 `#vp@combine_sku_name_item_name`。
+- 付费事件采用 `claim_order`、`order_finish`。
+- 难度采用 `#vp@num_difficult_level`。
+- 付费主体采用 `#user_id`，活跃主体采用 `#device_id`。
+- 金额采用 `#vp@order_price_total`；币种、实付、折扣和退款语义仍需线上确认。
+- 纯新增是日粒度：`#vp@lifetime_formal = 0`。
+- 版本新增是版本窗口内的新增玩家 cohort，跨窗口去重。
+- 7 日回流包含 14 日和 30 日回流，集合关系为 `30 日 ⊆ 14 日 ⊆ 7 日`。
+- 汇总求和时改用互斥口径：30 日优先，其次 14 日、7 日；活跃留存是非纯新增且非 7 日回流。
+- 下方“原始冲突记录”保留为提炼时的历史状态，实际执行以正式 draft 页面为准。
 ## 一、已有项目知识草稿支撑的约束
 
 | 主题 | 可复用结论 | 现有来源 |
@@ -123,7 +136,7 @@
 | 作弊过滤 | 用户明确不排除 |
 | 风险 | 静态回看会把 8/28 才通关的设备追认到 7/28；若业务需要“当日为止难度”，必须另建动态口径 |
 
-## 八、冲突与待确认项
+## 八、原始冲突记录（已被上方复核结论取代）
 
 | 编号 | 冲突/缺口 | 现有知识或事实 | 本会话指定 | 处理建议 |
 | --- | --- | --- | --- | --- |
