@@ -5,8 +5,8 @@ scope: project
 project: zhansoul-mingren
 status: draft
 owner: data-analytics
-reviewed_at: 2026-09-18
-tags: [zhansoul-mingren, events, properties, identity, payment]
+reviewed_at: 2026-09-23
+tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-growth]
 ---
 
 # 战魂铭人核心分析事件与属性口径
@@ -14,6 +14,12 @@ tags: [zhansoul-mingren, events, properties, identity, payment]
 ## 适用范围
 
 本页记录版本活跃、留存、付费、渠道、商品、难度分层和彼岸试炼渗透率分析采用的核心事件与属性。字段选择已于 2026-09-18 由项目分析人员确认，但线上字段类型、枚举、版本范围和分区覆盖仍需在数数后台核验后才能执行。
+
+## 数据表与主体
+
+- 客户端事件表：`ta.v_event_5`。
+- 用户属性表：`ta.v_user_5`。
+- 事件表通过 `#user_id` 关联用户表 `#user_id`；非付费客户端行为分析主体通常使用 `#device_id`。
 
 ## 事件口径
 
@@ -31,6 +37,50 @@ tags: [zhansoul-mingren, events, properties, identity, payment]
 
 单人 `enter_level`、`game_over` 与局域网、远联事件族不能混算。当前彼岸试炼分层只使用客户端单人 `enter_level` 和 `game_over`，不使用 `remote_enter_level`。
 
+## 局外养成系统事件
+
+| 系统 | 事件 | 业务含义/边界 |
+| --- | --- | --- |
+| 角色升级 | `hero_level_up` | 角色升级行为 |
+| 金莲花园 | `garden_plant_event_202606` | 金莲花园种植等行为 |
+| 宠物乐园 | `interact_PetParadies_202606` | 宠物喂养、宠物解锁等交互行为 |
+| 配饮料 | `talk_mary_202606` | 配饮料行为；见闻3级解锁 |
+| 领主技能 | `talk_ken_202606` | 解锁领主技能行为；见闻10级解锁 |
+| 道魂净化 | `esrBall_claim_identified` | 道魂净化行为 |
+| 道魂重铸 | `esrBall_merged` | 道魂重铸行为；获得模拟战通关掉落的第一个道魂后开放 |
+| 道魂洗练 | `esrBall_refined` | 道魂洗练行为 |
+| 道魂升级 | `esrBall_upgrade` | 道魂升级行为 |
+| 六道之力重铸 | `sixCycleOrb_merged` | 六道之力重铸行为；获得空间碎片通关掉落的第一个六道之力后开放 |
+| 六道之力洗练 | `sixCycleOrb_refined` | 六道之力洗练行为 |
+| 修罗之力加点 | `asura_power_add` | 修罗之力加点行为；见闻20级解锁，修罗角色使用 |
+| 道具占星 | `talk_crystallBall_202606` | 道具占星行为；需结合 `crystalball_interact_type` 识别有效类型 |
+
+当前未确认道魂净化、道魂洗练、道魂升级、金莲花园、宠物乐园等系统存在独立解锁事件或独立解锁条件；分析时不得自行补充。
+
+### 道具占星
+
+- 有效占星行为事件：`talk_crystallBall_202606`。
+- 有效行为筛选：`crystalball_interact_type IN ('选择羁绊', '加点')`。
+- `选择羁绊`和`加点`是事件属性值，不拆分为两个系统。
+- 用户属性 `unlock_system` 为列表类型，包含 `ESRBall` 时表示道具占星已解锁。
+
+## 主线与完整对局事件
+
+### 主线模式
+
+主线空间碎片模式包括：`空间碎片-终章`、`空间碎片-兽`、`空间碎片-狱`、`空间碎片-天人`、`空间碎片-修罗`、`空间碎片-诡`、`空间碎片-人`。
+
+- 单局难度属性：`#vp@num_difficult_level`，表示该局难度。
+- 通关成功状态：`reward_calculate IN ('success', 'success_special')`。
+
+### 完整对局结束事件
+
+- 其他模式：`game_over`。
+- 模拟战：`end_fireDanceMode`。
+- 战场模式：`end_survivalMode`。
+
+上述事件分别表示对应模式的完整一局结束；按模式使用时不得重复合并同一模式事件。
+
 ## 属性口径
 
 | 属性 | 业务含义 | 本项目采用值/规则 | 待核验项 |
@@ -41,6 +91,10 @@ tags: [zhansoul-mingren, events, properties, identity, payment]
 | `#vp@combine_sku_name_item_name` | 商品/SKU 名称 | 分商品付费人数和金额 | 与旧推荐字段 `#vp@total_item_name` 的粒度差异 |
 | `#vp@order_price_total` | 订单金额合计 | 分商品金额、ARPU 分子 | 币种、原价/实付、折扣、退款冲减和跨订单汇总 |
 | `#vp@num_difficult_level` | 主线难度 | 按设备历史最高通关难度分层 | 线上字段类型、空值、值域及与物理字段 `difficult_level` 的关系 |
+| `adventure_level` | 用户冒险见闻等级 | 用户表中的见闻等级属性 | 线上字段类型、快照时点和空值 |
+| `adventureLevel_level` | 见闻等级升级后的等级属性 | 随 `adventureLevelUp` 事件记录见闻等级变化 | 线上字段类型、与用户表 `adventure_level` 的一致性 |
+| `unlock_system` | 已解锁的功能/玩法列表 | 列表包含 `ESRBall` 时表示道具占星已解锁 | 列表元素类型、快照时点和历史版本覆盖 |
+| `crystalball_interact_type` | 道具占星交互类型 | 有效分析值为 `选择羁绊`、`加点` | 其他枚举值及空值含义 |
 | `mode_name` | 模式名称 | `彼岸试炼`；分层模式为 7 个空间碎片模式 | 精确枚举值和版本生效范围 |
 | `reward_calculate` | 结算方式 | `success`、`success_special` 视为胜利 | 大小写、空值和历史版本差异 |
 | `#vp@lifetime_formal` | 客户端生命周期/正式玩家标记 | `= 0` 表示纯新增；非 0 用于活跃留存判断 | 类型、空值和用户属性快照时点 |
@@ -74,6 +128,7 @@ tags: [zhansoul-mingren, events, properties, identity, payment]
 ## 证据
 
 - 2026-09-18 项目分析口径确认：字段冲突由项目分析人员选择。
+- 2026-09-23 项目分析人员确认：局外养成系统事件、占星筛选、解锁条件、主线模式和完整对局事件口径。
 - `data-contract/identity-and-payment.md`
 - `data-contract/tracking-plan-current.md`
 - `decisions/known-data-issues.md`
