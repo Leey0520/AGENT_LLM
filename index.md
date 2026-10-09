@@ -36,9 +36,12 @@
 | project._template.metric-template | 指标口径模板 | _template | draft | 2026-08-20 | [打开](./knowledge/projects/_template/metrics/metric-template.md) |
 | project.dajianghu.tracking-plan-current | 大江湖埋点方案使用基线 | dajianghu | draft | 2026-08-20 | [打开](./knowledge/projects/dajianghu/data-contract/tracking-plan-current.md) |
 | project.zhansoul-mingren.tracking-acceptance | 战魂铭人版本埋点验收执行单 | zhansoul-mingren | draft | 2026-08-20 | [打开](./knowledge/projects/zhansoul-mingren/playbooks/tracking-acceptance.md) |
-| project.zhansoul-mingren.analysis-fields | 战魂铭人核心分析事件与属性口径 | zhansoul-mingren | draft | 2026-09-23 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/analysis-fields.md) |
+| project.zhansoul-mingren.version-calendar | 战魂铭人版本上线日索引 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/business/version-calendar.md) |
+| project.zhansoul-mingren.mode-penetration | 战魂铭人彼岸试炼渗透率与难度分层口径 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/metrics/mode-penetration.md) |
+| project.zhansoul-mingren.payment-metrics | 战魂铭人付费与首次付费口径 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/metrics/payment-metrics.md) |
+| project.zhansoul-mingren.analysis-fields | 战魂铭人核心分析事件与属性口径 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/analysis-fields.md) |
 | project.zhansoul-mingren.tracking-plan-current | 战魂铭人埋点方案使用基线 | zhansoul-mingren | draft | 2026-08-20 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/tracking-plan-current.md) |
-| project.zhansoul-mingren.known-data-issues | 战魂铭人数据历史问题与规避 | zhansoul-mingren | draft | 2026-09-18 | [打开](./knowledge/projects/zhansoul-mingren/decisions/known-data-issues.md) |
-| project.zhansoul-mingren.player-segmentation | 战魂铭人玩家分层与回流口径 | zhansoul-mingren | draft | 2026-09-18 | [打开](./knowledge/projects/zhansoul-mingren/metrics/player-segmentation.md) |
+| project.zhansoul-mingren.known-data-issues | 战魂铭人数据历史问题与规避 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/decisions/known-data-issues.md) |
+| project.zhansoul-mingren.player-segmentation | 战魂铭人玩家分层与回流口径 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/metrics/player-segmentation.md) |
 | project.zhansoul-mingren.game-overview | 战魂铭人业务与版本概览 | zhansoul-mingren | draft | 2026-08-20 | [打开](./knowledge/projects/zhansoul-mingren/business/game-overview.md) |
-| project.zhansoul-mingren.identity-and-payment | 战魂铭人用户主体与付费口径 | zhansoul-mingren | draft | 2026-09-18 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/identity-and-payment.md) |
+| project.zhansoul-mingren.identity-and-payment | 战魂铭人用户主体与付费口径 | zhansoul-mingren | draft | 2026-10-09 | [打开](./knowledge/projects/zhansoul-mingren/data-contract/identity-and-payment.md) |

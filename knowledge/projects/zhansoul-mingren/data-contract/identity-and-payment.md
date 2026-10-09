@@ -5,7 +5,7 @@ scope: project
 project: zhansoul-mingren
 status: draft
 owner: data-analytics
-reviewed_at: 2026-09-18
+reviewed_at: 2026-10-09
 tags: [zhansoul-mingren, identity, payment, migration]
 ---
 
@@ -41,6 +41,8 @@ tags: [zhansoul-mingren, identity, payment, migration]
 
 `claim_order` 与 `order_finish` 属于订单链路中的不同节点。除非业务已明确两者的去重和关联规则，否则不能把两个事件的记录数或金额直接相加，也不能默认一个事件天然代表完整付费成功。
 
+2026-10-09 项目分析人员补充：一笔订单只会出现在 `claim_order` 或 `order_finish` 其中一个事件，按订单去重时不需要做「`order_finish` 优先」的二次去重。该结论仍待订单号级线上核验。
+
 ## 历史交接口径
 
 - `ta@claim_order_finish` 是此前交接文档中的付费虚拟事件，不能直接作为底层 `$part_event` 过滤；当前项目分析采用 `claim_order`、`order_finish`。
@@ -55,6 +57,13 @@ tags: [zhansoul-mingren, identity, payment, migration]
 - 付费率、ARPU 同时涉及付费与活跃时，必须分别写清分子和分母主体。
 - 当前知识没有定义 `#user_id` 与 `#device_id` 的通用映射规则。不能对两套主体直接联结后无说明地计算比率。
 - 若某个指标使用付费 numerator、设备 denominator，应将其标记为跨主体指标，并说明适用范围和限制。
+
+## 首次付费口径
+
+- 首次付费指该 `#user_id` 全历史的第一笔有效付费，不是版本内第一笔；按 `#event_time` 取最早一笔。
+- 首次付费机会人群指版本期间活跃、且在该版本开始日之前没有任何付费记录的用户；活跃侧使用 `tap_start` 上携带的 `#user_id`，因为服务端付费事件没有 `#device_id`。
+- 版本首次付费率、商品首次付费率和商品构成的计算见 `metrics/payment-metrics.md`。
+- 按人统计活跃前必须先验证 `tap_start` 的 `#user_id` 覆盖率；覆盖率不足时，分母只能声明为「已登录活跃用户」。
 
 ## 查询前检查
 
@@ -76,3 +85,4 @@ tags: [zhansoul-mingren, identity, payment, migration]
 - [战魂铭人交接文档](https://chillyroom.feishu.cn/wiki/QzInwjjLei28EEkaQvMcgxOPnyd)
 - [战魂铭人大事件记录](https://chillyroom.feishu.cn/wiki/wikcnZJns9CpwbKO3XoRsgxSmUh)
 - 2026-09-18 项目分析口径确认。
+- 2026-10-09 项目分析人员确认：订单事件不共存的处理边界、首次付费口径和 `tap_start` 的 `#user_id` 覆盖率风险。

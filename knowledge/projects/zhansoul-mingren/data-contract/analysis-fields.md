@@ -5,7 +5,7 @@ scope: project
 project: zhansoul-mingren
 status: draft
 owner: data-analytics
-reviewed_at: 2026-09-23
+reviewed_at: 2026-10-09
 tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-growth]
 ---
 
@@ -32,6 +32,7 @@ tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-gr
 | `order_finish` | 服务端订单完成事件 | `#user_id` | 当前项目采用的付费事件之一；不能默认与 `claim_order` 相加后等于唯一付费订单数 |
 | `purchases_trigger`、`purchases_success`、`purchases_fail` | 客户端购买链路 | 客户端主体 | 与服务端订单事件分开，不用于替代服务端收入 |
 | `refund_order` | 退款链路 | 服务端主体 | 与付费成功和商品收入分开处理 |
+| `commit_invite_code` | 提交邀请码（活动） | 待核验 | 2026-07-28 至 2026-09-01 邀请码活动；用于从新增留存中剔除参与该活动的玩家 |
 
 `ta@claim_order_finish` 是此前的虚拟事件交接口径，不是可直接过滤的底层 `$part_event` 值。当前项目分析采用 `claim_order`、`order_finish`；执行前应确认虚拟事件展开规则、两个底层事件的关系和同一订单去重方式。
 
@@ -87,8 +88,9 @@ tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-gr
 | --- | --- | --- | --- |
 | `#device_id` | 客户端设备主体 | 非付费分析按此去重 | 空值覆盖和迁移渠道差异 |
 | `#user_id` | 服务端用户主体 | 付费分析按此去重 | 与服务端访客主体的关系 |
-| `#vp@channel_fix` | 渠道字段 | 目标渠道精确值：`TapTap`、`IOS`、`GP` | 与旧推荐字段 `#vp@distro_id` 的覆盖差异 |
+| `#vp@channel_fix` | 渠道字段 | 目标渠道精确值：`TapTap`、`IOS`、`GP`；`TapTap` 区分大小写，不能写成 `Taptap` | 与旧推荐字段 `#vp@distro_id` 的覆盖差异 |
 | `#vp@combine_sku_name_item_name` | 商品/SKU 名称 | 分商品付费人数和金额 | 与旧推荐字段 `#vp@total_item_name` 的粒度差异 |
+| `#vp@item_sku_name_type` | 商品类别 | 按商品类别看付费人数、付费率和构成 | 与 `#vp@combine_sku_name_item_name` 的层级关系、枚举和空值 |
 | `#vp@order_price_total` | 订单金额合计 | 分商品金额、ARPU 分子 | 币种、原价/实付、折扣、退款冲减和跨订单汇总 |
 | `#vp@num_difficult_level` | 主线难度 | 按设备历史最高通关难度分层 | 线上字段类型、空值、值域及与物理字段 `difficult_level` 的关系 |
 | `adventure_level` | 用户冒险见闻等级 | 用户表中的见闻等级属性 | 线上字段类型、快照时点和空值 |
@@ -111,6 +113,8 @@ tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-gr
 - 付费人数、ARPPU 和付费主体使用 `#user_id`。
 - 付费率、ARPU 等同时需要付费和活跃口径的指标，必须明确分子、分母主体；`#user_id` 与 `#device_id` 不能无说明直接联结。
 - 迁移渠道付费记录从 2024-07-19 起才完整。早于该日期的付费结果不能直接按现行口径解释。
+- 服务端付费事件不携带 `#device_id`，设备主体无法直接关联付费；需要按人统计「活跃∩付费」时，用客户端活跃事件 `tap_start` 上携带的 `#user_id` 作为桥梁。
+- 埋点方案中 `tap_start` 的属性示例含 `#device_id` 和 `account_id`（凉屋账号ID），不含 `#user_id`；`#user_id` 是数数系统属性，登录后由 SDK 写入，登录前的 `tap_start` 可能为空，按人统计活跃前须先验证覆盖率。
 
 ## 时间规则
 
@@ -118,17 +122,36 @@ tags: [zhansoul-mingren, events, properties, identity, payment, out-of-battle-gr
 - 服务端事件按 0 时区上报时，使用 `DATE_ADD('hour', 8, "#event_time")` 转为北京时间。
 - 客户端事件按北京时间自然日统计，不对已经处于北京时间的 `#event_time` 重复加 8 小时。
 - 分区过滤使用字符串条件，例如 `"$part_date" BETWEEN '2026-07-27' AND '2026-08-28'`。
+- 看板使用「标签动态匹配」筛选时，SQL 报表必须显式带入【事件时间】动态参数 `${PartDate:ds}`，否则会报 `$part_date属性获取失败`。
+
+## 用户表可用属性
+
+以下来自埋点方案【#用户数据】页签，属于方案记录，线上类型、快照时点和空值仍须核验。
+
+| 属性 | 业务含义 |
+| --- | --- |
+| `account_id` | 凉屋账号ID |
+| `device_id` | 设备号 |
+| `create_time` | 首次启动时间 |
+| `first_order_time` | 首次充值时间 |
+| `last_pay_time` | 最后一次充值时间 |
+| `adventure_level` | 冒险见闻等级 |
 
 ## 关联口径
 
 - 玩家分层、纯新增、版本新增和回流包含关系见 `metrics/player-segmentation.md`。
 - 用户主体与迁移限制见 `data-contract/identity-and-payment.md`。
+- 付费、首次付费和商品指标见 `metrics/payment-metrics.md`。
+- 玩家分层和留存见 `metrics/player-segmentation.md`。
+- 彼岸试炼渗透率见 `metrics/mode-penetration.md`。
+- 版本上线日索引见 `business/version-calendar.md`。
 - 线上字段未确认时的执行风险见 `decisions/known-data-issues.md`。
 
 ## 证据
 
 - 2026-09-18 项目分析口径确认：字段冲突由项目分析人员选择。
 - 2026-09-23 项目分析人员确认：局外养成系统事件、占星筛选、解锁条件、主线模式和完整对局事件口径。
+- 2026-10-09 项目分析人员确认：商品类别、邀请码事件、活跃与付费主体搭桥、用户表字段、动态事件时间参数及 TapTap 大小写口径。
 - `data-contract/identity-and-payment.md`
 - `data-contract/tracking-plan-current.md`
 - `decisions/known-data-issues.md`

@@ -5,7 +5,7 @@ scope: project
 project: zhansoul-mingren
 status: draft
 owner: data-analytics
-reviewed_at: 2026-09-18
+reviewed_at: 2026-10-09
 tags: [zhansoul-mingren, data-quality, migration, known-issues]
 ---
 
@@ -22,6 +22,9 @@ tags: [zhansoul-mingren, data-quality, migration, known-issues]
 | 金额语义未锁定 | 商品金额、ARPU、GMV | 确认币种、原价/实付、折扣、退款冲减和观察窗口。 |
 | 难度字段与方案字段可能不一致 | 难度分层、通关分析 | 当前项目采用 `#vp@num_difficult_level`；核验与物理字段 `difficult_level` 的关系和类型。 |
 | 回流分层存在包含关系 | 7 日、14 日、30 日回流 | 回流集合按 `30 日 ⊆ 14 日 ⊆ 7 日`；汇总求和时改用互斥分类，见 `metrics/player-segmentation.md`。 |
+| 看板动态标签与 SQL 事件时间不一致 | 所有依赖 `$part_date` 的看板 SQL | 看板使用标签动态匹配筛选时，SQL 必须显式带入事件时间动态参数 `${PartDate:ds}`；否则会报 `$part_date属性获取失败`。 |
+| 付费历史窗口早于完整记录起点 | 首次付费、历史付费、首次付费机会人群 | 迁移渠道付费记录自 2024-07-19 起才完整。即使查询分区从更早日期开始，也不能把当前表结果解释为全历史；早期版本判「此前是否消费」会偏松，抬高机会人群并压低付费率。 |
+| `tap_start` 的 `#user_id` 可能缺失 | 用活跃人数做付费率、首次付费率或按人 ARPU 分母 | `#user_id` 由登录后 SDK 写入，登录前点击开始游戏可能为空。先验证覆盖率；不足时只能声明为「已登录活跃用户」口径。 |
 | 纯新增与版本新增粒度不同 | 活跃构成、版本 cohort | 纯新增是日粒度 `#vp@lifetime_formal = 0`；版本新增是版本窗口内符合条件的设备并集，不能直接相加。 |
 | 在线埋点表混有历史版本 | 客户端事件、旧属性和停用字段 | 先核对版本生效、数数方案状态和更新日志；不把表头或旧页签当现行口径。 |
 | 首次入库类型错误 | 任何新属性 | 先修程序上报，再由数数管理员处理错误元数据；不要在 SQL 里强转掩盖。 |
@@ -44,3 +47,4 @@ tags: [zhansoul-mingren, data-quality, migration, known-issues]
 - [战魂铭人大事件记录](https://chillyroom.feishu.cn/wiki/wikcnZJns9CpwbKO3XoRsgxSmUh)
 - [战魂铭人更新日志与游戏内邮件](https://chillyroom.feishu.cn/wiki/wikcnAs9kBF3ZgbYzZ6T9xQCfpd)
 - 2026-09-18 项目分析口径确认。
+- 2026-10-09 项目分析人员确认：动态事件时间参数、付费历史覆盖和 `tap_start` 的 `#user_id` 覆盖率风险。
