@@ -11,7 +11,7 @@
 | platform.thinkingdata.tracking-acceptance-workflow | 公司埋点验收流程 | - | draft | 2026-08-20 | [打开](./knowledge/platform/thinkingdata/tracking-acceptance-workflow.md) |
 | platform.thinkingdata.data-types-and-identity | 数数数据类型与用户身份规则 | - | draft | 2026-08-20 | [打开](./knowledge/platform/thinkingdata/data-types-and-identity.md) |
 | platform.thinkingdata.dashboard-and-project-operations | 数数项目空间与看板操作标准 | - | draft | 2026-08-20 | [打开](./knowledge/platform/thinkingdata/dashboard-and-project-operations.md) |
-| platform.tool-boundaries | GitLab Codex 数数与飞书工具边界 | - | approved | 2026-08-20 | [打开](./knowledge/platform/tool-boundaries.md) |
+| platform.tool-boundaries | GitHub Codex 数数与飞书工具边界 | - | approved | 2026-10-30 | [打开](./knowledge/platform/tool-boundaries.md) |
 | platform.thinkingdata.overview | ThinkingData 数数平台工作入口 | - | draft | 2026-08-20 | [打开](./knowledge/platform/thinkingdata/README.md) |
 
 ## 通用方法

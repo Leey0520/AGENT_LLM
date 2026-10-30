@@ -77,15 +77,19 @@ async function installRenderedSkills(sourceSkills, destinationSkills, repository
   }
 }
 
-export async function installGlobalCodex({ repositoryRoot = detectRepositoryRoot(), codexRoot = globalCodexRoot() } = {}) {
+export async function installGlobalCodex({
+  repositoryRoot = detectRepositoryRoot(),
+  codexRoot = globalCodexRoot(),
+  skillsRoot = path.join(os.homedir(), '.agents', 'skills')
+} = {}) {
   const sourceSkills = path.join(repositoryRoot, '.agents', 'skills');
   const sourceHooks = path.join(repositoryRoot, '.codex', 'hooks');
   const sourceHooksConfig = path.join(repositoryRoot, '.codex', 'hooks.json');
 
-  await mkdir(path.join(codexRoot, 'skills'), { recursive: true });
+  await mkdir(skillsRoot, { recursive: true });
   await mkdir(path.join(codexRoot, 'hooks'), { recursive: true });
   await cp(path.join(repositoryRoot, 'AGENTS.md'), path.join(codexRoot, 'AGENTS.md'), { force: true });
-  await installRenderedSkills(sourceSkills, path.join(codexRoot, 'skills'), repositoryRoot);
+  await installRenderedSkills(sourceSkills, skillsRoot, repositoryRoot);
   await cp(sourceHooks, path.join(codexRoot, 'hooks'), { recursive: true, force: true });
   await installRenderedHook(
     sourceHookPath(repositoryRoot, 'session-start.mjs'),
@@ -101,6 +105,7 @@ export async function installGlobalCodex({ repositoryRoot = detectRepositoryRoot
   return {
     repositoryRoot,
     codexRoot,
+    skillsRoot,
     skills: ['game-data-analysis', 'knowledge-maintenance'],
     hooks: ['session-start.mjs', 'pre-tool-use.mjs']
   };

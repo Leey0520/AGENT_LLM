@@ -5,7 +5,7 @@
 # 全局工作区
 
 - 当前仓库根目录是共享知识库和 Codex 运行源文件仓库；它不是某一个游戏项目目录。
-- Git 管理的 `AGENTS.md`、`.agents/skills/` 和 `.codex/` 是统一源文件；执行 `node scripts/install-global-codex.mjs` 后，运行副本位于 `$CODEX_HOME`（未设置时为用户级 Codex 目录），对所有项目生效。
+- Git 管理的 `AGENTS.md`、`.agents/skills/` 和 `.codex/` 是统一源文件；执行 `node scripts/install-global-codex.mjs` 后，Skills 安装到用户级 `~/.agents/skills/`，规则和 Hooks 安装到 `$CODEX_HOME`（未设置时为 `~/.codex/`），供所有项目使用。
 - 共享平台规则位于知识库 `knowledge/platform/`，通用方法位于 `knowledge/methods/`，游戏专属内容位于 `knowledge/projects/<project>/`。
 - 使用知识时从知识库根目录读取，不要把某个游戏的事件、属性、身份或指标口径写进通用 Skill。
 

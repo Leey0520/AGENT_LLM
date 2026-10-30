@@ -23,7 +23,7 @@ Read the skill-local `references/document-contract.md` before creating or promot
 4. Preserve stable `id` values when editing. Update `reviewed_at`, owner, status, evidence, and cross-links when their meaning changes.
 5. Run `node "$knowledgeRoot\scripts\knowledge-tool.mjs" build-index` and `node "$knowledgeRoot\scripts\knowledge-tool.mjs" validate --check-index` from the knowledge-base root.
 6. Inspect `git diff --check`, `git status --short`, and the complete diff. Never stage `.ae-cli/`, credentials, personal data, or generated exports.
-7. Use a branch and Merge Request for formal changes unless the user explicitly authorizes another Git workflow. Never push, merge, or alter remote state without task-specific authorization.
+7. Use a branch and Pull Request (or Merge Request on GitLab) for formal changes unless the user explicitly authorizes another Git workflow. Never push, merge, or alter remote state without task-specific authorization.
 
 ## Source extraction rules
 
